@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWealth — AI Investment Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --white: #ffffff;
+    --navy: #0f2b4c;
+    --navy-mid: #1a3f6f;
+    --blue: #1e6bff;
+    --blue-light: #e8f0ff;
+    --green: #00a86b;
+    --green-light: #e6f7f1;
+    --amber: #e6930a;
+    --amber-light: #fef3e2;
+    --red: #e53e3e;
+    --red-light: #fff0f0;
+    --border: #e2e8f0;
+    --border-dark: #cbd5e1;
+    --text: #0f2b4c;
+    --text-mid: #4a5568;
+    --text-muted: #94a3b8;
+    --shadow-sm: 0 1px 3px rgba(15,43,76,0.08), 0 1px 2px rgba(15,43,76,0.04);
+    --shadow: 0 4px 16px rgba(15,43,76,0.08), 0 2px 6px rgba(15,43,76,0.04);
+    --shadow-lg: 0 12px 40px rgba(15,43,76,0.12), 0 4px 12px rgba(15,43,76,0.06);
+    --font: 'Plus Jakarta Sans', sans-serif;
+    --serif: 'Instrument Serif', serif;
+    --radius: 14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* subtle bg pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(15,43,76,0.04) 1px, transparent 0);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px;
+    height: 64px;
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 800; font-size: 1.15rem; color: var(--navy); letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--navy);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+  }
+
+  .logo-accent { color: var(--blue); }
+
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+
+  .nav-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--green-light);
+    color: var(--green);
+    border: 1px solid rgba(0,168,107,0.2);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* LAYOUT */
+  .page {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 28px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* HERO */
+  .hero { margin-bottom: 28px; animation: slideUp 0.5s ease both; }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--blue-light); color: var(--blue);
+    border: 1px solid rgba(30,107,255,0.15);
+    padding: 5px 14px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-size: clamp(1.9rem, 3.5vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--navy);
+    margin-bottom: 12px;
+  }
+
+  h1 .serif-em { font-family: var(--serif); font-style: italic; color: var(--blue); font-weight: 400; }
+
+  .hero-sub { color: var(--text-mid); font-size: 0.92rem; line-height: 1.7; max-width: 440px; }
+
+  /* FORM CARD */
+  .form-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: slideUp 0.5s 0.1s ease both;
+  }
+
+  .form-card-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .form-card-title { font-weight: 700; font-size: 0.95rem; color: var(--navy); }
+  .form-card-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+  .form-body { padding: 24px 28px; }
+
+  .section-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px; margin-top: 24px;
+  }
+  .section-head:first-child { margin-top: 0; }
+
+  .section-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; flex-shrink: 0;
+  }
+  .section-icon.blue { background: var(--blue-light); }
+  .section-icon.green { background: var(--green-light); }
+  .section-icon.amber { background: var(--amber-light); }
+
+  .section-title { font-size: 0.78rem; font-weight: 700; color: var(--navy); letter-spacing: 0.01em; }
+  .section-desc { font-size: 0.7rem; color: var(--text-muted); }
+
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 4px; }
+  .field-single { margin-bottom: 4px; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+
+  .field-label {
+    font-size: 0.72rem; font-weight: 600;
+    color: var(--text-mid);
+    letter-spacing: 0.01em;
+  }
+
+  .input-wrap { position: relative; }
+
+  .input-prefix {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted); font-size: 0.85rem; font-weight: 500;
+    pointer-events: none;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding: 10px 12px 10px 26px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button { display: none; }
+  input[type="number"]:focus {
+    border-color: var(--blue);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(30,107,255,0.1);
+  }
+  input[type="number"]::placeholder { color: #c4cdd8; }
+
+  /* INCOME special */
+  .income-input input[type="number"] {
+    font-size: 1.1rem; font-weight: 700;
+    padding: 13px 14px 13px 30px;
+    border-color: var(--border-dark);
+  }
+  .income-input .input-prefix { font-size: 1rem; font-weight: 700; color: var(--navy); }
+
+  /* RISK SELECTOR */
+  .risk-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 12px; }
+
+  .risk-option input { display: none; }
+
+  .risk-label {
+    display: block;
+    border: 1.5px solid var(--border);
+    border-radius: 11px;
+    padding: 14px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    background: var(--bg);
+  }
+
+  .risk-emoji { font-size: 1.3rem; display: block; margin-bottom: 6px; }
+  .risk-name { font-size: 0.78rem; font-weight: 700; color: var(--navy); display: block; margin-bottom: 3px; }
+  .risk-sub { font-size: 0.65rem; color: var(--text-muted); }
+
+  .risk-option input:checked + .risk-label {
+    border-color: var(--blue);
+    background: var(--blue-light);
+    box-shadow: 0 0 0 1px var(--blue);
+  }
+  .risk-option input:checked + .risk-label .risk-name { color: var(--blue); }
+
+  .risk-option.safe input:checked + .risk-label { border-color: var(--green); background: var(--green-light); box-shadow: 0 0 0 1px var(--green); }
+  .risk-option.safe input:checked + .risk-label .risk-name { color: var(--green); }
+
+  .risk-option.bold input:checked + .risk-label { border-color: var(--red); background: var(--red-light); box-shadow: 0 0 0 1px var(--red); }
+  .risk-option.bold input:checked + .risk-label .risk-name { color: var(--red); }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 22px 0; }
+
+  /* SUBMIT */
+  .submit-row { padding: 20px 28px 24px; border-top: 1px solid var(--border); background: var(--bg); }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .submit-btn:hover { background: var(--navy-mid); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .submit-btn:active { transform: none; }
+
+  .submit-btn svg { width: 16px; height: 16px; }
+
+  /* ALLOCATION PILLS */
+  .alloc-pills {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-top: 20px;
+    animation: slideUp 0.5s 0.2s ease both;
+  }
+
+  .alloc-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    flex: 1; min-width: 100px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .pill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .pill-dot.green { background: var(--green); }
+  .pill-dot.blue { background: var(--blue); }
+  .pill-dot.amber { background: var(--amber); }
+
+  .pill-info { display: flex; flex-direction: column; }
+  .pill-pct { font-weight: 800; font-size: 1rem; color: var(--navy); line-height: 1; }
+  .pill-name { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* HISTORY */
+  .history-panel { animation: slideUp 0.5s 0.15s ease both; }
+
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .panel-title { font-weight: 700; font-size: 0.9rem; color: var(--navy); }
+
+  .clear-btn {
+    font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
+    background: none; border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 12px; cursor: pointer;
+    transition: all 0.15s; font-family: var(--font);
+  }
+  .clear-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .history-empty {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 36px 20px; text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .history-empty-icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.35; }
+  .history-empty-text { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+
+  .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 78vh; overflow-y: auto; padding-right: 2px; }
+  .history-list::-webkit-scrollbar { width: 4px; }
+  .history-list::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 2px; }
+
+  .hcard {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .hcard:hover { box-shadow: var(--shadow); border-color: var(--border-dark); }
+
+  .hcard-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .hcard-date { font-size: 0.68rem; color: var(--text-muted); }
+
+  .hcard-risk-badge { font-size: 0.62rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+  .hcard-risk-badge.low { background: var(--green-light); color: var(--green); }
+  .hcard-risk-badge.medium { background: var(--amber-light); color: var(--amber); }
+  .hcard-risk-badge.high { background: var(--red-light); color: var(--red); }
+
+  .hcard-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .hcard-lbl { font-size: 0.72rem; color: var(--text-muted); }
+  .hcard-val { font-size: 0.85rem; font-weight: 700; color: var(--navy); }
+  .hcard-val.up { color: var(--green); }
+  .hcard-val.down { color: var(--red); }
+
+  .hcard-tip { font-size: 0.7rem; color: var(--text-muted); padding-top: 8px; margin-top: 8px; border-top: 1px solid var(--border); line-height: 1.5; }
+
+  @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+  @keyframes countUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+  /* ---- FUTURE VALUE WIDGET ---- */
+  .fv-widget { margin-top: 20px; animation: slideUp 0.5s 0.25s ease both; }
+  .fv-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .fv-header { padding: 18px 22px 16px; background: linear-gradient(135deg, #0f2b4c 0%, #1a3f6f 100%); }
+  .fv-header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .fv-title { font-weight: 800; font-size: 0.95rem; color: white; display: flex; align-items: center; gap: 8px; }
+  .fv-badge { font-size: 0.62rem; font-weight: 700; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.85); padding: 3px 10px; border-radius: 20px; letter-spacing: 0.06em; }
+  .fv-input-row { display: flex; align-items: center; gap: 10px; }
+  .fv-amount-wrap { position: relative; flex: 1; }
+  .fv-prefix { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; font-size: 0.95rem; color: rgba(255,255,255,0.55); pointer-events: none; }
+  .fv-input { width: 100%; background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.2); border-radius: 9px; color: white; font-family: var(--font); font-size: 1.05rem; font-weight: 700; padding: 10px 12px 10px 28px; outline: none; transition: border-color 0.15s; -moz-appearance: textfield; }
+  .fv-input::-webkit-inner-spin-button { display: none; }
+  .fv-input::placeholder { color: rgba(255,255,255,0.3); }
+  .fv-input:focus { border-color: var(--green); background: rgba(255,255,255,0.15); }
+  .fv-label-txt { font-size: 0.72rem; color: rgba(255,255,255,0.55); white-space: nowrap; }
+  .fv-timeline { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); }
+  .fv-year-card { background: var(--white); padding: 16px 12px; text-align: center; transition: background 0.12s; }
+  .fv-year-card:hover { background: var(--bg); }
+  .fv-yr-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 7px; }
+  .fv-yr-value { font-size: 1rem; font-weight: 800; color: var(--navy); margin-bottom: 3px; line-height: 1; animation: countUp 0.3s ease; }
+  .fv-yr-gain { font-size: 0.65rem; font-weight: 700; color: var(--green); }
+  .fv-calc-section { padding: 18px 20px 20px; border-top: 1px solid var(--border); }
+  .fv-section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px; }
+  .fv-calc-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .fv-tab { flex: 1; padding: 8px 10px; border-radius: 8px; font-family: var(--font); font-size: 0.75rem; font-weight: 700; border: 1.5px solid var(--border); background: var(--bg); color: var(--text-muted); cursor: pointer; transition: all 0.15s; text-align: center; }
+  .fv-tab:hover { border-color: var(--border-dark); color: var(--navy); }
+  .fv-tab.tab-sip { }
+  .fv-tab.tab-sip.active { border-color: #7c3aed; color: #7c3aed; background: #f0ebff; }
+  .fv-tab.tab-fd.active  { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+  .fv-mini-panel { display: none; }
+  .fv-mini-panel.show { display: block; }
+  .fv-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 11px; }
+  .fv-field-label { font-size: 0.7rem; font-weight: 700; color: var(--text-mid); display: flex; justify-content: space-between; align-items: center; }
+  .fv-field-label .fv-val-badge { font-weight: 800; color: var(--navy); font-size: 0.76rem; }
+  .fv-slider { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; outline: none; cursor: pointer; }
+  .fv-slider.purple { background: linear-gradient(to right, #7c3aed 0%, #7c3aed var(--p,40%), var(--border-dark) var(--p,40%)); }
+  .fv-slider.blue   { background: linear-gradient(to right, var(--blue) 0%, var(--blue) var(--p,40%), var(--border-dark) var(--p,40%)); }
+  .fv-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: white; border: 2.5px solid currentColor; box-shadow: 0 1px 4px rgba(0,0,0,0.15); cursor: pointer; }
+  .fv-slider.purple::-webkit-slider-thumb { color: #7c3aed; border-color: #7c3aed; }
+  .fv-slider.blue::-webkit-slider-thumb   { color: var(--blue); border-color: var(--blue); }
+  .fv-result-box { border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+  .fv-result-box.purple { background: #f0ebff; border: 1px solid rgba(124,58,237,0.15); }
+  .fv-result-box.blue   { background: var(--blue-light); border: 1px solid rgba(30,107,255,0.15); }
+  .fv-res-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .fv-res-label.purple { color: #7c3aed; }
+  .fv-res-label.blue   { color: var(--blue); }
+  .fv-res-value { font-size: 1.3rem; font-weight: 800; line-height: 1; }
+  .fv-res-value.purple { color: #7c3aed; }
+  .fv-res-value.blue   { color: var(--blue); }
+  .fv-res-sub { font-size: 0.68rem; color: var(--text-muted); margin-top: 3px; }
+  .fv-res-gain { font-size: 0.82rem; font-weight: 800; }
+  .fv-res-gain.green { color: var(--green); }
+
+  @media (max-width: 900px) { .page { grid-template-columns: 1fr; } .history-panel { order: -1; } }
+  @media (max-width: 600px) { nav { padding: 0 16px; } .page { padding: 24px 14px 60px; } .form-body { padding: 18px; } .form-card-header { padding: 18px; } .submit-row { padding: 16px; } .field-grid { grid-template-columns: 1fr; } .risk-grid { grid-template-columns: 1fr; } .fv-timeline { grid-template-columns: repeat(2,1fr); } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#">
+    <div class="logo-icon">💹</div>
+    Smart<span class="logo-accent">Wealth</span>
+  </a>
+  <div class="nav-right">
+    <div style="display:flex;align-items:center;gap:6px">
+      <a href="/" style="padding:7px 16px;border-radius:20px;font-size:0.82rem;font-weight:600;color:var(--navy);text-decoration:none;background:var(--navy);color:white;">Planner</a>
+      <a href="/calculators" style="padding:7px 16px;border-radius:20px;font-size:0.82rem;font-weight:600;color:var(--text-muted);text-decoration:none;transition:all 0.15s;" onmouseover="this.style.color='var(--navy)'" onmouseout="this.style.color='var(--text-muted)'">Calculators</a>
+    </div>
+    <div class="nav-chip"><div class="dot"></div> Live Market Data</div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- LEFT: FORM -->
+  <div>
+    <div class="hero">
+      <div class="hero-eyebrow">✦ AI-Powered Portfolio Planner</div>
+      <h1>Your money,<br><span class="serif-em">working smarter.</span></h1>
+      <p class="hero-sub">Enter your monthly income and expenses. We'll build a personalised investment plan with live market data tailored to your risk appetite.</p>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-header">
+        <div>
+          <div class="form-card-title">Monthly Financial Overview</div>
+          <div class="form-card-sub">All amounts in Indian Rupees (₹)</div>
+        </div>
+      </div>
+
+      <form action="/result" method="POST">
+        <div class="form-body">
+
+          <!-- INCOME -->
+          <div class="section-head">
+            <div class="section-icon blue">💰</div>
+            <div>
+              <div class="section-title">Monthly Income</div>
+              <div class="section-desc">Your total take-home salary</div>
+            </div>
+          </div>
+          <div class="field-single income-input">
+            <div class="field">
+              <div class="field-label">Total Monthly Income</div>
+              <div class="input-wrap">
+                <span class="input-prefix">₹</span>
+                <input type="number" name="income" placeholder="e.g. 80000" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- NEEDS -->
+          <div class="section-head">
+            <div class="section-icon green">🏠</div>
+            <div>
+              <div class="section-title">Essential Needs</div>
+              <div class="section-desc">Fixed & necessary monthly expenses</div>
+            </div>
+          </div>
+          <div class="field-grid">
+            <div class="field">
+              <div class="field-label">Food & Groceries</div>
+              <div class="input-wrap"><span class="input-prefix">₹</span><input type="number" name="food" placeholder="0" required></div>
+            </div>
+            <div class="field">
+              <div class="field-label">Rent / EMI</div>
+              <div class="input-wrap"><span class="input-prefix">₹</span><input type="number" name="rent" placeholder="0" required></div>
+            </div>
+            <div class="field">
+              <div class="field-label">Travel & Commute</div>
+              <div class="input-wrap"><span class="input-prefix">₹</span><input type="number" name="travel" placeholder="0" required></div>
+            </div>
+            <div class="field">
+              <div class="field-label">Utilities & Bills</div>
+              <div class="input-wrap"><span class="input-prefix">₹</span><input type="number" name="utilities" placeholder="0" required></div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- WANTS -->
+          <div class="section-head">
+            <div class="section-icon amber">🛍️</div>
+            <div>
+              <div class="section-title">Discretionary Wants</div>
+              <div class="section-desc">Lifestyle & optional spending</div>
+            </div>
+          </div>
+          <div class="field-grid">
+            <div class="field">
+              <div class="field-label">Shopping</div>
+              <div class="input-wrap"><span class="input-prefix">₹</span><input type="number" name="shopping" placeholder="0" required></div>
+            </div>
+            <div class="field">
+              <div class="field-label">Entertainment</div>
+              <div class="input-wrap"><span class="input-prefix">₹</span><input type="number" name="entertainment" placeholder="0" required></div>
+            </div>
+            <div class="field" style="grid-column: span 2">
+              <div class="field-label">Subscriptions</div>
+              <div class="input-wrap"><span class="input-prefix">₹</span><input type="number" name="subscriptions" placeholder="0" required></div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- RISK -->
+          <div class="section-head">
+            <div class="section-icon blue">📊</div>
+            <div>
+              <div class="section-title">Risk Tolerance</div>
+              <div class="section-desc">How comfortable are you with market swings?</div>
+            </div>
+          </div>
+          <div class="risk-grid">
+            <div class="risk-option safe">
+              <input type="radio" name="risk" id="low" value="low">
+              <label class="risk-label" for="low">
+                <span class="risk-emoji">🛡️</span>
+                <span class="risk-name">Conservative</span>
+                <span class="risk-sub">Stable, low risk</span>
+              </label>
+            </div>
+            <div class="risk-option">
+              <input type="radio" name="risk" id="medium" value="medium" checked>
+              <label class="risk-label" for="medium">
+                <span class="risk-emoji">⚖️</span>
+                <span class="risk-name">Moderate</span>
+                <span class="risk-sub">Balanced returns</span>
+              </label>
+            </div>
+            <div class="risk-option bold">
+              <input type="radio" name="risk" id="high" value="high">
+              <label class="risk-label" for="high">
+                <span class="risk-emoji">🚀</span>
+                <span class="risk-name">Aggressive</span>
+                <span class="risk-sub">High growth focus</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="submit-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 7l5 5-5 5M6 12h12"/></svg>
+            Analyse My Portfolio
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="alloc-pills">
+      <div class="alloc-pill"><div class="pill-dot green"></div><div class="pill-info"><span class="pill-pct">40%</span><span class="pill-name">Stocks</span></div></div>
+      <div class="alloc-pill"><div class="pill-dot blue"></div><div class="pill-info"><span class="pill-pct">40%</span><span class="pill-name">SIP / MF</span></div></div>
+      <div class="alloc-pill"><div class="pill-dot amber"></div><div class="pill-info"><span class="pill-pct">20%</span><span class="pill-name">Gold</span></div></div>
+    </div>
+
+    <!-- ===== FUTURE VALUE + MINI CALCULATORS ===== -->
+    <div class="fv-widget">
+      <div class="fv-card">
+
+        <!-- dark header with input -->
+        <div class="fv-header">
+          <div class="fv-header-top">
+            <div class="fv-title">🔮 If I save this much today…</div>
+            <div class="fv-badge">Future Value</div>
+          </div>
+          <div class="fv-input-row">
+            <div class="fv-amount-wrap">
+              <span class="fv-prefix">₹</span>
+              <input class="fv-input" type="number" id="fv-amount" placeholder="5000" value="5000" oninput="updateFV()">
+            </div>
+            <div class="fv-label-txt">…it becomes →</div>
+          </div>
+        </div>
+
+        <!-- 4-year timeline -->
+        <div class="fv-timeline" id="fv-timeline">
+          <div class="fv-year-card">
+            <div class="fv-yr-label">1 Year</div>
+            <div class="fv-yr-value" id="fv-1y">—</div>
+            <div class="fv-yr-gain" id="fv-1y-g"></div>
+          </div>
+          <div class="fv-year-card">
+            <div class="fv-yr-label">3 Years</div>
+            <div class="fv-yr-value" id="fv-3y">—</div>
+            <div class="fv-yr-gain" id="fv-3y-g"></div>
+          </div>
+          <div class="fv-year-card">
+            <div class="fv-yr-label">5 Years</div>
+            <div class="fv-yr-value" id="fv-5y">—</div>
+            <div class="fv-yr-gain" id="fv-5y-g"></div>
+          </div>
+          <div class="fv-year-card">
+            <div class="fv-yr-label">10 Years</div>
+            <div class="fv-yr-value" id="fv-10y">—</div>
+            <div class="fv-yr-gain" id="fv-10y-g"></div>
+          </div>
+        </div>
+
+        <!-- SIP / FD mini calc -->
+        <div class="fv-calc-section">
+          <div class="fv-section-label">Quick Calculator</div>
+          <div class="fv-calc-tabs">
+            <button class="fv-tab tab-sip active" id="tab-sip" onclick="fvSwitchTab('sip')">🔁 SIP Returns</button>
+            <button class="fv-tab tab-fd" id="tab-fd"  onclick="fvSwitchTab('fd')">🏦 FD Maturity</button>
+          </div>
+
+          <!-- SIP MINI -->
+          <div class="fv-mini-panel show" id="mini-sip">
+            <div class="fv-field">
+              <div class="fv-field-label">Monthly SIP <span class="fv-val-badge" id="sip-m-lbl">₹5,000</span></div>
+              <input class="fv-slider purple" type="range" id="sip-m" min="500" max="100000" step="500" value="5000" oninput="updateSIPMini()">
+            </div>
+            <div class="fv-field">
+              <div class="fv-field-label">Duration <span class="fv-val-badge" id="sip-y-lbl">10 years</span></div>
+              <input class="fv-slider purple" type="range" id="sip-y" min="1" max="40" value="10" oninput="updateSIPMini()">
+            </div>
+            <div class="fv-field">
+              <div class="fv-field-label">Expected Return <span class="fv-val-badge" id="sip-r-lbl">12%</span></div>
+              <input class="fv-slider purple" type="range" id="sip-r" min="4" max="30" step="0.5" value="12" oninput="updateSIPMini()">
+            </div>
+            <div class="fv-result-box purple">
+              <div>
+                <div class="fv-res-label purple">Total Corpus</div>
+                <div class="fv-res-value purple" id="sip-corpus">—</div>
+                <div class="fv-res-sub" id="sip-invested">—</div>
+              </div>
+              <div style="text-align:right">
+                <div class="fv-res-label purple">Est. Gains</div>
+                <div class="fv-res-gain green" id="sip-gains">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FD MINI -->
+          <div class="fv-mini-panel" id="mini-fd">
+            <div class="fv-field">
+              <div class="fv-field-label">Principal <span class="fv-val-badge" id="fd-p-lbl">₹50,000</span></div>
+              <input class="fv-slider blue" type="range" id="fd-p" min="1000" max="1000000" step="1000" value="50000" oninput="updateFDMini()">
+            </div>
+            <div class="fv-field">
+              <div class="fv-field-label">Tenure <span class="fv-val-badge" id="fd-y-lbl">5 years</span></div>
+              <input class="fv-slider blue" type="range" id="fd-y" min="1" max="20" value="5" oninput="updateFDMini()">
+            </div>
+            <div class="fv-field">
+              <div class="fv-field-label">Interest Rate <span class="fv-val-badge" id="fd-r-lbl">7%</span></div>
+              <input class="fv-slider blue" type="range" id="fd-r" min="3" max="15" step="0.1" value="7" oninput="updateFDMini()">
+            </div>
+            <div class="fv-result-box blue">
+              <div>
+                <div class="fv-res-label blue">Maturity Amount</div>
+                <div class="fv-res-value blue" id="fd-maturity">—</div>
+                <div class="fv-res-sub" id="fd-principal-lbl">—</div>
+              </div>
+              <div style="text-align:right">
+                <div class="fv-res-label blue">Interest Earned</div>
+                <div class="fv-res-gain green" id="fd-interest">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- END WIDGET -->
+
+<script>
+const inr = n => '₹' + Math.round(n).toLocaleString('en-IN');
+const compact = n => {
+  if (n >= 10000000) return '₹' + (n/10000000).toFixed(2) + ' Cr';
+  if (n >= 100000)   return '₹' + (n/100000).toFixed(2) + ' L';
+  if (n >= 1000)     return '₹' + (n/1000).toFixed(1) + 'K';
+  return inr(n);
+};
+
+// Slider fill updater
+function setSP(el, min, max) {
+  const p = ((parseFloat(el.value) - parseFloat(el.min || min)) / ((parseFloat(el.max || max)) - parseFloat(el.min || min)) * 100).toFixed(1) + '%';
+  el.style.setProperty('--p', p);
+}
+
+// ── FUTURE VALUE (lump-sum at 12% CAGR) ──
+function updateFV() {
+  const amt = parseFloat(document.getElementById('fv-amount').value) || 0;
+  const rate = 0.12;
+  const years = [1, 3, 5, 10];
+  const ids   = ['1y', '3y', '5y', '10y'];
+  years.forEach((y, i) => {
+    const fv = amt * Math.pow(1 + rate, y);
+    const gain = fv - amt;
+    const el = document.getElementById('fv-' + ids[i]);
+    el.textContent = compact(fv);
+    el.style.animation = 'none';
+    el.offsetHeight; // reflow
+    el.style.animation = 'countUp 0.3s ease';
+    document.getElementById('fv-' + ids[i] + '-g').textContent = '+' + compact(gain);
+  });
+}
+
+// ── SIP MINI CALC ──
+function updateSIPMini() {
+  const m = parseFloat(document.getElementById('sip-m').value);
+  const y = parseFloat(document.getElementById('sip-y').value);
+  const r = parseFloat(document.getElementById('sip-r').value) / 100;
+
+  setSP(document.getElementById('sip-m'), 500, 100000);
+  setSP(document.getElementById('sip-y'), 1, 40);
+  setSP(document.getElementById('sip-r'), 4, 30);
+
+  document.getElementById('sip-m-lbl').textContent = inr(m);
+  document.getElementById('sip-y-lbl').textContent = y + (y == 1 ? ' year' : ' years');
+  document.getElementById('sip-r-lbl').textContent = r * 100 + '%';
+
+  const mr = r / 12;
+  const n  = y * 12;
+  const corpus = m * ((Math.pow(1 + mr, n) - 1) / mr) * (1 + mr);
+  const invested = m * n;
+  const gains = corpus - invested;
+
+  document.getElementById('sip-corpus').textContent  = compact(corpus);
+  document.getElementById('sip-invested').textContent = 'Invested: ' + compact(invested);
+  document.getElementById('sip-gains').textContent    = '+' + compact(gains);
+}
+
+// ── FD MINI CALC ──
+function updateFDMini() {
+  const p = parseFloat(document.getElementById('fd-p').value);
+  const y = parseFloat(document.getElementById('fd-y').value);
+  const r = parseFloat(document.getElementById('fd-r').value) / 100;
+
+  setSP(document.getElementById('fd-p'), 1000, 1000000);
+  setSP(document.getElementById('fd-y'), 1, 20);
+  setSP(document.getElementById('fd-r'), 3, 15);
+
+  document.getElementById('fd-p-lbl').textContent = inr(p);
+  document.getElementById('fd-y-lbl').textContent = y + (y == 1 ? ' year' : ' years');
+  document.getElementById('fd-r-lbl').textContent = r * 100 + '%';
+
+  const mat = p * Math.pow(1 + r / 4, 4 * y); // quarterly compounding
+  const interest = mat - p;
+
+  document.getElementById('fd-maturity').textContent     = compact(mat);
+  document.getElementById('fd-principal-lbl').textContent = 'Principal: ' + compact(p);
+  document.getElementById('fd-interest').textContent      = '+' + compact(interest);
+}
+
+// ── TAB SWITCH ──
+function fvSwitchTab(tab) {
+  document.getElementById('mini-sip').classList.toggle('show', tab === 'sip');
+  document.getElementById('mini-fd').classList.toggle('show', tab === 'fd');
+  document.getElementById('tab-sip').classList.toggle('active', tab === 'sip');
+  document.getElementById('tab-fd').classList.toggle('active', tab === 'fd');
+}
+
+// Init
+updateFV();
+updateSIPMini();
+updateFDMini();
+// Init slider fills
+['sip-m','sip-y','sip-r','fd-p','fd-y','fd-r'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) setSP(el);
+});
+</script>
+  </div>
+
+  <!-- RIGHT: HISTORY -->
+  <div class="history-panel">
+    <div class="panel-header">
+      <div class="panel-title">Analysis History</div>
+      {% if history %}
+      <form action="/clear_history" method="POST" style="display:inline">
+        <button type="submit" class="clear-btn">Clear all</button>
+      </form>
+      {% endif %}
+    </div>
+
+    {% if not history %}
+    <div class="history-empty">
+      <div class="history-empty-icon">📋</div>
+      <div class="history-empty-text">No analyses yet.<br>Your history will appear here after your first analysis.</div>
+    </div>
+    {% else %}
+    <div class="history-list">
+      {% for entry in history %}
+      <div class="hcard">
+        <div class="hcard-top">
+          <div class="hcard-date">{{ entry.date }}</div>
+          <div class="hcard-risk-badge {{ entry.risk }}">
+            {% if entry.risk == 'low' %}Conservative{% elif entry.risk == 'medium' %}Moderate{% else %}Aggressive{% endif %}
+          </div>
+        </div>
+        <div class="hcard-row"><span class="hcard-lbl">Income</span><span class="hcard-val">₹{{ entry.income | int | string | replace('-','') }}</span></div>
+        <div class="hcard-row">
+          <span class="hcard-lbl">Savings</span>
+          <span class="hcard-val {% if entry.savings >= 0 %}up{% else %}down{% endif %}">₹{{ entry.savings | int | abs }}</span>
+        </div>
+        <div class="hcard-row"><span class="hcard-lbl">Needs / Wants</span><span class="hcard-val" style="font-size:0.78rem;color:var(--text-muted)">₹{{ entry.needs|int }} / ₹{{ entry.wants|int }}</span></div>
+        <div class="hcard-tip">💡 {{ entry.suggestion }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+</body>
+</html>
